@@ -1,6 +1,12 @@
+import java.util.ArrayList;
+import java.util.List;
+
 public class Gallow {
-    private final String[] gallowsCondition =
-            {""" 
+    private final List<String> gallowsCondition = new ArrayList<>();
+
+    Gallow () {
+        gallowsCondition.add(
+                 """ 
                  ---------
                  |       |
                  |
@@ -9,28 +15,34 @@ public class Gallow {
                  |
                  |
             _____|_____
-            """,
-                    """
-                 ---------
-                 |       |
-                 |       0
-                 |
-                 |
-                 |
-                 |
-            _____|_____
-            """,
-                    """
+            """
+        );
+
+        gallowsCondition.add("""
                  ---------
                  |       |
                  |       0
-                 |      / \\
-                 |      \\ /
+                 |
+                 |
                  |
                  |
             _____|_____
-            """,
-                    """
+            """
+        );
+        gallowsCondition.add(
+                """
+                    ---------
+                    |       |
+                    |       0
+                    |      / \\
+                    |      \\ /
+                    |
+                    |
+               _____|_____
+               """
+        );
+        gallowsCondition.add(
+                 """
                  ---------
                  |       |
                  |       0
@@ -39,40 +51,48 @@ public class Gallow {
                  |
                  |
             _____|_____
-            """,
-                    """
-                 ---------
-                 |       |
-                 |       0
-                 |   ---/ \\---
-                 |      \\ /
-                 |
-                 |
-            _____|_____
-            """,
-                    """
-                 ---------
-                 |       |
-                 |       0
-                 |   ---/ \\---
-                 |      \\ /
-                 |     /
-                 |    /
-            _____|_____
-            """,
-                    """
-                 ---------
-                 |       |
-                 |       0
-                 |   ---/ \\---
-                 |      \\ /
-                 |     /   \\
-                 |    /     \\
-            _____|_____
-            """};
+            """
+        );
+        gallowsCondition.add(
+                """
+                   ---------
+                   |       |
+                   |       0
+                   |   ---/ \\---
+                   |      \\ /
+                   |
+                   |
+              _____|_____
+              """
+        );
+        gallowsCondition.add(
+                """
+                  ---------
+                  |       |
+                  |       0
+                  |   ---/ \\---
+                  |      \\ /
+                  |     /
+                  |    /
+             _____|_____
+             """
+        );
+        gallowsCondition.add(
+                """
+                   ---------
+                   |       |
+                   |       0
+                   |   ---/ \\---
+                   |      \\ /
+                   |     /   \\
+                   |    /     \\
+              _____|_____
+              """
+        );
+    }
 
-    public String getCondition(int mistakes) {
-        return gallowsCondition[mistakes];
+    public String getCondition(int index) {
+        return gallowsCondition.get(index);
     }
 }
 

@@ -1,21 +1,20 @@
-import java.util.Arrays;
-import java.util.Scanner;
+import java.util.*;
 
 public class Game {
     private final Scanner SCANNER = new Scanner(System.in);
-    private final Dictionary dictionary;
-    private char[] word;
-    private char[] wordMask;
-    private static char[] usedLetters = {' '};
+    private final Dictionary DICTIONARY;
+    private final Gallow GALLOW;
+    private final List<Character> WORD = new ArrayList<>();
+    private final List<Character> WORD_MASK = new ArrayList<>();
+    private final Set<Character> usedLetters = new HashSet<>();
     private int mistakes = 0;
-    private final Gallow gallow;
 
     public Game(Dictionary dictionary, Gallow gallow) {
-        this.dictionary = dictionary;
-        this.gallow = gallow;
+        this.DICTIONARY = dictionary;
+        this.GALLOW = gallow;
     }
 
-    public void startMenu () {
+    public void start() {
         System.out.println("Добро пожаловать в игру \"Виселица\"!");
         do {
             System.out.print("Хотите начать новую игру? Введите (д)а или (н)ет: ");
@@ -33,53 +32,61 @@ public class Game {
 
     private void startGameLoop() {
         chooseRandomWord();
-        makeWordMask(word);
+        makeWordMask();
         printGameCondition();
 
         do {
             checkLetter(inputLetter());
             printGameCondition();
-            if (areMistakesExceeded()) {
+            if (mistakesAreExceeded()) {
+                System.out.println("--------------------------------------------------------");
                 System.out.println("Вы допустили максимальное количество ошибок и проиграли.");
                 System.out.print("Было загадано слово: ");
-                for (char letter: word) {
+                for (char letter: WORD) {
                     System.out.print(letter);
                 }
                 System.out.println();
+                System.out.println("--------------------------------------------------------");
                 break;
             }
-            if (checkVictory()) {
-                System.out.println("Вы выйграли!");
+            if (gameIsWon()) {
+                System.out.println("++++++++++++");
+                System.out.println("Вы выиграли!");
+                System.out.println("++++++++++++");
                 break;
             }
         } while (true);
 
+        WORD.clear();
+        WORD_MASK.clear();
+        usedLetters.clear();
         cleanMistakes();
-        cleanUsedLetter();
     }
 
     private void chooseRandomWord() {
         int randomNumber;
         do {
-            randomNumber = (int) (Math.random() * (dictionary.getLength())) + 1;
-        } while (dictionary.getWord(randomNumber).length() < 5 || dictionary.getWord(randomNumber).length() > 10);
-        word = dictionary.getWord(randomNumber).toUpperCase().toCharArray();
+            randomNumber = (int) (Math.random() * (DICTIONARY.getSize())) + 1;
+        } while (DICTIONARY.getWord(randomNumber).length() < 5 || DICTIONARY.getWord(randomNumber).length() > 10);
+        char[] chars = DICTIONARY.getWord(randomNumber).toUpperCase().toCharArray();
+        for (char symbol: chars) {
+            this.WORD.add(symbol);
+        }
     }
 
-    private void makeWordMask(char[] word) {
-        wordMask = new char[word.length];
-        for (int i = 0; i < word.length; i++) {
-            wordMask[i] = '*';
+    private void makeWordMask() {
+        for (int i = 0; i < WORD.size(); i++) {
+            WORD_MASK.add('*');
         }
     }
 
     private char inputLetter() {
-
         char letter = ' ';
         boolean repeat;
 
         do {
             repeat = false;
+            System.out.println("---------------");
             System.out.print("Введите букву: ");
             String line = SCANNER.nextLine();
             if (line.isEmpty()) {
@@ -94,65 +101,54 @@ public class Game {
             }
             letter = line.toUpperCase().charAt(0);
             if ((((letter < 1040) || (letter > 1071)) && letter != 1025)) {
-                System.out.println("Введен недопустимый символ. Пожалуйста, повторите ввод.");
+                System.out.println("Введен недопустимый символ. Повторите ввод.");
                 repeat = true;
                 continue;
             }
-            for (char ch: wordMask) {
-                if (letter == ch) {
-                    System.out.println("Вы уже угадали данную букву, введите другую.");
-                    repeat = true;
-                    break;
-                }
-            }
-            if (repeat) {
+            if (WORD_MASK.contains(letter)) {
+                System.out.println("Вы уже угадали данную букву, введите другую.");
+                repeat = true;
                 continue;
             }
-            for (char ch: usedLetters) {
-                if (ch == letter) {
-                    System.out.println("Вы уже использовали данную букву, введите другую.");
+            if (usedLetters.contains((letter))) {
+                System.out.println("Вы уже использовали данную букву, введите другую.");
                     repeat = true;
-                    break;
-                }
             }
-
         } while (repeat);
-        addUsedLetter(letter);
+
+        usedLetters.add(letter);
         return letter;
     }
 
     private void checkLetter(char character) {
         boolean mistake = true;
-
-        for (int i = 0; i < word.length; i++) {
-            if (character == word[i]) {
-                wordMask[i] = character;
+        for (int i = 0; i < WORD.size(); i++) {
+            if (WORD.get(i) == character) {
+                WORD_MASK.set(i, character);
                 mistake = false;
             }
         }
-
         if (mistake) {
             mistakes++;
             System.out.println("Вы ошиблись, такой буквы в слове нет.");
             return;
         }
-
         System.out.println("Вы угадали букву!");
     }
 
     private void printGameCondition() {
         System.out.println();
-        System.out.println(Arrays.toString(wordMask));
+        System.out.println(Arrays.toString(WORD_MASK.toArray()));
         System.out.println();
-        System.out.println(gallow.getCondition(mistakes));
+        System.out.println(GALLOW.getCondition(mistakes));
         System.out.println("Количество допущенных ошибок: " + mistakes + " из 6");
-        System.out.println("Вы использовали следующие буквы: " + Arrays.toString(usedLetters));
+        System.out.println("Вы использовали следующие буквы: " + Arrays.toString(usedLetters.toArray()));
     }
 
-    private boolean checkVictory() {
+    private boolean gameIsWon() {
         boolean victory = true;
 
-        for (char ch : wordMask) {
+        for (char ch : WORD_MASK) {
             if (ch == '*') {
                 victory = false;
                 break;
@@ -162,21 +158,10 @@ public class Game {
         return victory;
     }
 
-    private boolean areMistakesExceeded() {
+    private boolean mistakesAreExceeded() {
         return mistakes == 6;
     }
     private void cleanMistakes() {
         mistakes = 0;
     }
-
-    private void addUsedLetter(char letter) {
-        usedLetters[usedLetters.length - 1] = letter;
-        usedLetters = Arrays.copyOf(usedLetters, usedLetters.length + 1);
-    }
-
-    private void cleanUsedLetter() {
-        usedLetters = Arrays.copyOf(usedLetters, 1);
-        usedLetters[0] = ' ';
-    }
-
 }
